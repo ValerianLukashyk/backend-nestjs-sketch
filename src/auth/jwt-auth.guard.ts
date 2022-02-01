@@ -20,7 +20,7 @@ export class JwtAuthGuard implements CanActivate {
 
       if (bearer !== 'Bearer' || !token) {
         throw new UnauthorizedException({
-          message: 'Enter denied. Bad auth token.',
+          message: 'Access denied. Bad auth token.',
         });
       }
 
@@ -29,7 +29,7 @@ export class JwtAuthGuard implements CanActivate {
       return true;
     } catch (e) {
       throw new UnauthorizedException({
-        message: 'Enter denied. Please login.',
+        message: 'Access denied. Please login.',
         error: e,
       });
     }

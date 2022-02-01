@@ -6,8 +6,8 @@ export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @Get()
-  @Header("Content-Type", "application/json")
-  getHello(): {name: string} {
-    return {name: "Valerian"}
+  @Header('Content-Type', 'application/json')
+  getHello(): { name: string } {
+    return { name: 'Valerian' };
   }
 }

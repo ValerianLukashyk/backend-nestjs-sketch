@@ -1,6 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  UseFilters,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { RolesService } from 'src/roles/roles.service';
+import { addRoleDto } from './dto/add-role.dto';
+import { BanUserDto } from './dto/ban-user.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './user.model';
 
@@ -12,7 +19,8 @@ export class UsersService {
   ) {}
   async createUser(dto: CreateUserDto) {
     const user = await this.userRepository.create(dto);
-    const role = await this.roleService.getRoleByValue('USER');
+    const role = await this.roleService.getRoleByValue('ADMIN');
+    console.log(role.description);
     await user.$set('roles', [role.id]);
     user.roles = [role];
     return user;
@@ -28,6 +36,37 @@ export class UsersService {
       where: { email },
       include: { all: true },
     });
+    return user;
+  }
+
+  async addRole(dto: addRoleDto) {
+    const user = await this.userRepository.findByPk(dto.userId);
+
+    const role = await this.roleService.getRoleByValue(dto.value);
+
+    if (role && user) {
+      const result = await user.$add('role', role.id);
+      console.log(result);
+      if (result) {
+        return {
+          message: `Role ${role.value} has been added to user ${user.email}`,
+        };
+      }
+    }
+
+    throw new HttpException("Can't find user or role", HttpStatus.NOT_FOUND);
+  }
+  async banUser(dto: BanUserDto) {
+    const user = await this.userRepository.findByPk(dto.userId);
+    if (!user) {
+      throw new HttpException(
+        `Can't find user with ID: ${dto.userId}`,
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    user.banned = true;
+    user.banReason = dto.banReason;
+    await user.save();
     return user;
   }
 }
